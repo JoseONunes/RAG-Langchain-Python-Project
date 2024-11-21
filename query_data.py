@@ -1,8 +1,9 @@
 import argparse
 # from dataclasses import dataclass
-from langchain.vectorstores import Chroma
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
+from langchain_chroma.vectorstores import Chroma
+from langchain_openai.embeddings import OpenAIEmbeddings
+from langchain_openai.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 import openai
 from dotenv import load_dotenv
@@ -38,22 +39,19 @@ def main():
 
     # Search the DB.
     results = db.similarity_search_with_relevance_scores(query_text, k=3)
-    print(f"Results: {results}")  # Debug print to check the results
     if len(results) == 0 or results[0][1] < 0.7:
         print("Unable to find matching results.")
         return
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    print(f"Context Text: {context_text}")  # Debug print to check the context text
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
-    print(prompt)
 
     model = ChatOpenAI()
-    response_text = model.predict(prompt)
+    response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("source", None) for doc, _score in results]
-    formatted_response = f"Response: {response_text}\nSources: {sources}"
+    formatted_response = f"Response: {response_text}\nSources: {', '.join(filter(None, sources))}"
     print(formatted_response)
 
 

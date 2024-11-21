@@ -1,15 +1,15 @@
 # Import necessary modules from langchain
-from langchain.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
 # Import modules for OpenAI API and environment variables
 import openai 
 from dotenv import load_dotenv
 # Import modules for file and directory operations
 import os
 import shutil
+from langchain_community.vectorstores import Chroma
+from langchain_openai.embeddings import OpenAIEmbeddings
 
 # Load environment variables and set OpenAI API key
 load_dotenv()
@@ -24,7 +24,9 @@ def main():
 
 def generate_data_store():
     documents = load_documents()
+    print(f"Loaded {len(documents)} documents.")  # Debug print
     chunks = split_text(documents)
+    print(f"Split into {len(chunks)} chunks.")  # Debug print
     save_to_chroma(chunks)
 
 def load_documents():
@@ -60,8 +62,7 @@ def save_to_chroma(chunks: list[Document]):
     db = Chroma.from_documents(
         chunks, OpenAIEmbeddings(), persist_directory=CHROMA_PATH
     )
-    db.persist()
-    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")  # Debug print
 
 if __name__ == "__main__":
     main()
